@@ -165,7 +165,6 @@ Wire Atlas (or a Mongo host), Secret Manager for keys, and optionally `STORAGE=g
 
 - No Docker daemon on the cloud VM (compose verified as files only).
 - No Vercel / Railway / Atlas / Cloudinary account credentials for this agent.
-- Cursor `publish-app` is for single Node web apps — this monorepo needs a separate Java API host.
 
 Ship works locally + via `docker compose` where Docker is available; add the accounts/secrets above to go live.
 
