@@ -8,13 +8,11 @@ import com.examenpsi.expensecopilot.repository.ExpenseRepository;
 import com.examenpsi.expensecopilot.storage.ObjectStorage;
 import com.examenpsi.expensecopilot.web.dto.CreateExpenseRequest;
 import com.examenpsi.expensecopilot.web.dto.ExpenseResponse;
-import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ExpenseService {
@@ -33,7 +31,6 @@ public class ExpenseService {
     this.objectStorage = objectStorage;
   }
 
-  @Transactional
   public ExpenseResponse create(CreateExpenseRequest request) {
     if (expenseRepository.existsByUploadId(request.uploadId())) {
       throw new IllegalStateException("An expense already exists for this upload");
@@ -44,7 +41,8 @@ public class ExpenseService {
     }
 
     Expense expense = new Expense();
-    expense.setUpload(upload);
+    expense.setUploadId(upload.getId());
+    expense.setObjectKey(upload.getObjectKey());
     expense.setMerchant(request.merchant().trim());
     expense.setExpenseDate(request.expenseDate());
     expense.setAmount(request.amount());
@@ -52,13 +50,13 @@ public class ExpenseService {
     expense.setCategory(request.category());
     expense.setNotes(request.notes());
     expense.setConfidence(request.confidence());
+    expense.markNew();
     expenseRepository.save(expense);
 
     receiptService.markConfirmed(upload);
     return toResponse(expense);
   }
 
-  @Transactional(readOnly = true)
   public List<ExpenseResponse> list(String month, ExpenseCategory category) {
     boolean hasMonth = month != null && !month.isBlank();
     boolean hasCategory = category != null;
@@ -79,7 +77,6 @@ public class ExpenseService {
     return expenses.stream().map(this::toResponse).toList();
   }
 
-  @Transactional(readOnly = true)
   public ExpenseResponse get(UUID id) {
     Expense expense = expenseRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("Expense not found: " + id));
@@ -89,7 +86,7 @@ public class ExpenseService {
   private ExpenseResponse toResponse(Expense expense) {
     return new ExpenseResponse(
         expense.getId(),
-        expense.getUpload().getId(),
+        expense.getUploadId(),
         expense.getMerchant(),
         expense.getExpenseDate(),
         expense.getAmount(),
@@ -97,7 +94,7 @@ public class ExpenseService {
         expense.getCategory(),
         expense.getNotes(),
         expense.getConfidence(),
-        objectStorage.resolveUrl(expense.getUpload().getObjectKey()),
+        objectStorage.resolveUrl(expense.getObjectKey()),
         expense.getCreatedAt(),
         expense.getUpdatedAt()
     );

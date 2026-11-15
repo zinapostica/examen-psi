@@ -1,16 +1,12 @@
 services:
   db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: expense_copilot
-      POSTGRES_USER: expense
-      POSTGRES_PASSWORD: expense
+    image: mongo:7
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - mongodata:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U expense -d expense_copilot"]
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -21,9 +17,7 @@ services:
       - "8080:8080"
     environment:
       PORT: 8080
-      DATABASE_URL: jdbc:postgresql://db:5432/expense_copilot
-      DATABASE_USERNAME: expense
-      DATABASE_PASSWORD: expense
+      MONGODB_URI: mongodb://db:27017/expense_copilot
       STORAGE: local
       LOCAL_UPLOAD_DIR: /data/uploads
       PUBLIC_BASE_URL: http://localhost:8080
@@ -48,5 +42,5 @@ services:
       - api
 
 volumes:
-  pgdata:
+  mongodata:
   uploads:

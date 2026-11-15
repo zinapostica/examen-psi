@@ -61,10 +61,7 @@ public class SeedDataRunner {
   ) throws Exception {
     UUID id = UUID.randomUUID();
     String key = "receipts/" + id + ".jpg";
-    // Minimal valid JPEG (1x1)
-    byte[] jpeg = new byte[]{
-        (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xD9
-    };
+    byte[] jpeg = new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xD9};
     Files.write(dir.resolve(id + ".jpg"), jpeg);
 
     ReceiptUpload upload = new ReceiptUpload();
@@ -73,10 +70,12 @@ public class SeedDataRunner {
     upload.setContentType("image/jpeg");
     upload.setSizeBytes(jpeg.length);
     upload.setStatus(UploadStatus.CONFIRMED);
+    upload.markNew();
     uploads.save(upload);
 
     Expense expense = new Expense();
-    expense.setUpload(upload);
+    expense.setUploadId(id);
+    expense.setObjectKey(key);
     expense.setMerchant(merchant);
     expense.setExpenseDate(date);
     expense.setAmount(amount);
@@ -84,6 +83,7 @@ public class SeedDataRunner {
     expense.setCategory(category);
     expense.setNotes(notes);
     expense.setConfidence(0.9);
+    expense.markNew();
     expenses.save(expense);
   }
 }

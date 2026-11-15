@@ -5,9 +5,9 @@ import com.examenpsi.expensecopilot.domain.ExpenseCategory;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
+public interface ExpenseRepository extends MongoRepository<Expense, UUID> {
 
   List<Expense> findAllByOrderByExpenseDateDescCreatedAtDesc();
 

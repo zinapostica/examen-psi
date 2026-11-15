@@ -21,9 +21,5 @@ services:
         sync: false
       - key: CORS_ORIGINS
         sync: false
-      - key: DATABASE_URL
-        sync: false
-      - key: DATABASE_USERNAME
-        sync: false
-      - key: DATABASE_PASSWORD
+      - key: MONGODB_URI
         sync: false

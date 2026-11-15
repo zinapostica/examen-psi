@@ -1,68 +1,33 @@
 package com.examenpsi.expensecopilot.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.PostLoad;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
-import org.springframework.data.domain.Persistable;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "receipt_uploads")
-public class ReceiptUpload implements Persistable<UUID> {
+@Document(collection = "receipt_uploads")
+public class ReceiptUpload {
 
   @Id
   private UUID id;
 
-  @Transient
-  private boolean newEntity = true;
-
-  @Column(nullable = false)
   private String objectKey;
-
-  @Column(nullable = false)
   private String contentType;
-
-  @Column(nullable = false)
   private long sizeBytes;
-
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 32)
   private UploadStatus status;
-
-  @Column(columnDefinition = "TEXT")
   private String rawExtractJson;
-
-  @Column(columnDefinition = "TEXT")
   private String draftMerchant;
-
-  private java.time.LocalDate draftExpenseDate;
-
-  @Column(precision = 12, scale = 2)
-  private java.math.BigDecimal draftAmount;
-
-  @Column(length = 3)
+  private LocalDate draftExpenseDate;
+  private BigDecimal draftAmount;
   private String draftCurrency;
-
-  @Enumerated(EnumType.STRING)
-  @Column(length = 32)
   private ExpenseCategory draftCategory;
-
   private Double draftConfidence;
-
-  @Column(nullable = false, updatable = false)
   private Instant createdAt;
-
   private Instant updatedAt;
 
-  @PrePersist
-  void onCreate() {
+  public void markNew() {
     if (id == null) {
       id = UUID.randomUUID();
     }
@@ -71,17 +36,10 @@ public class ReceiptUpload implements Persistable<UUID> {
       createdAt = now;
     }
     updatedAt = now;
-    newEntity = false;
   }
 
-  @PostLoad
-  void markNotNew() {
-    newEntity = false;
-  }
-
-  @Override
-  public boolean isNew() {
-    return newEntity;
+  public void touch() {
+    updatedAt = Instant.now();
   }
 
   public UUID getId() {
@@ -122,7 +80,7 @@ public class ReceiptUpload implements Persistable<UUID> {
 
   public void setStatus(UploadStatus status) {
     this.status = status;
-    this.updatedAt = Instant.now();
+    touch();
   }
 
   public String getRawExtractJson() {
@@ -141,19 +99,19 @@ public class ReceiptUpload implements Persistable<UUID> {
     this.draftMerchant = draftMerchant;
   }
 
-  public java.time.LocalDate getDraftExpenseDate() {
+  public LocalDate getDraftExpenseDate() {
     return draftExpenseDate;
   }
 
-  public void setDraftExpenseDate(java.time.LocalDate draftExpenseDate) {
+  public void setDraftExpenseDate(LocalDate draftExpenseDate) {
     this.draftExpenseDate = draftExpenseDate;
   }
 
-  public java.math.BigDecimal getDraftAmount() {
+  public BigDecimal getDraftAmount() {
     return draftAmount;
   }
 
-  public void setDraftAmount(java.math.BigDecimal draftAmount) {
+  public void setDraftAmount(BigDecimal draftAmount) {
     this.draftAmount = draftAmount;
   }
 

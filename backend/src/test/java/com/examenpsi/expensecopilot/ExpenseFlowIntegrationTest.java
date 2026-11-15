@@ -6,13 +6,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -29,11 +30,8 @@ class ExpenseFlowIntegrationTest {
 
   @DynamicPropertySource
   static void props(DynamicPropertyRegistry registry) {
-    registry.add("spring.datasource.url", () -> "jdbc:h2:mem:expense;MODE=PostgreSQL;DB_CLOSE_DELAY=-1");
-    registry.add("spring.datasource.username", () -> "sa");
-    registry.add("spring.datasource.password", () -> "");
-    registry.add("spring.datasource.driver-class-name", () -> "org.h2.Driver");
-    registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+    registry.add("spring.data.mongodb.uri",
+        () -> "mongodb://localhost:27017/expense_copilot_test");
     registry.add("app.storage.type", () -> "local");
     registry.add("app.storage.local-dir", () -> tempDir.resolve("uploads").toString());
     registry.add("app.storage.public-base-url", () -> "http://localhost:8080");
@@ -43,6 +41,14 @@ class ExpenseFlowIntegrationTest {
 
   @Autowired
   MockMvc mockMvc;
+
+  @Autowired
+  MongoTemplate mongoTemplate;
+
+  @BeforeEach
+  void cleanDb() {
+    mongoTemplate.getDb().drop();
+  }
 
   @Test
   void uploadExtractConfirmList() throws Exception {
@@ -55,7 +61,8 @@ class ExpenseFlowIntegrationTest {
         .andExpect(jsonPath("$.status").value("UPLOADED"))
         .andReturn();
 
-    String uploadId = com.jayway.jsonpath.JsonPath.read(uploadResult.getResponse().getContentAsString(), "$.id");
+    String uploadId = com.jayway.jsonpath.JsonPath.read(
+        uploadResult.getResponse().getContentAsString(), "$.id");
 
     mockMvc.perform(post("/api/receipts/" + uploadId + "/extract"))
         .andExpect(status().isOk())
@@ -83,7 +90,5 @@ class ExpenseFlowIntegrationTest {
     mockMvc.perform(get("/api/expenses").param("month", "2026-11").param("category", "FOOD"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].merchant").value("Café Central"));
-
-    Files.createDirectories(tempDir.resolve("uploads"));
   }
 }

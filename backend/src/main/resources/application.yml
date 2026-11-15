@@ -4,18 +4,10 @@ server:
 spring:
   application:
     name: expense-copilot
-  datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/expense_copilot}
-    username: ${DATABASE_USERNAME:expense}
-    password: ${DATABASE_PASSWORD:expense}
-  jpa:
-    hibernate:
-      ddl-auto: update
-    open-in-view: false
-    properties:
-      hibernate:
-        jdbc:
-          time_zone: UTC
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/expense_copilot}
+      uuid-representation: standard
   servlet:
     multipart:
       max-file-size: 5MB

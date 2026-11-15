@@ -18,7 +18,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -47,7 +46,6 @@ public class ReceiptService {
     this.objectMapper = objectMapper;
   }
 
-  @Transactional
   public ReceiptUploadResponse upload(MultipartFile file) {
     validateFile(file);
     byte[] bytes;
@@ -68,13 +66,13 @@ public class ReceiptService {
     upload.setContentType(file.getContentType());
     upload.setSizeBytes(bytes.length);
     upload.setStatus(UploadStatus.UPLOADED);
+    upload.markNew();
     uploadRepository.save(upload);
 
     log.info("Receipt uploaded id={} sizeBytes={} storage={}", id, bytes.length, props.storage().type());
     return toResponse(upload);
   }
 
-  @Transactional
   public ReceiptUploadResponse extract(UUID id) {
     ReceiptUpload upload = uploadRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("Receipt upload not found: " + id));
@@ -110,7 +108,6 @@ public class ReceiptService {
     }
   }
 
-  @Transactional(readOnly = true)
   public ReceiptUploadResponse get(UUID id) {
     ReceiptUpload upload = uploadRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("Receipt upload not found: " + id));

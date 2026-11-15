@@ -1,66 +1,36 @@
 package com.examenpsi.expensecopilot.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PostLoad;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
-import org.springframework.data.domain.Persistable;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "expenses")
-public class Expense implements Persistable<UUID> {
+@Document(collection = "expenses")
+public class Expense {
 
   @Id
   private UUID id;
 
-  @Transient
-  private boolean newEntity = true;
+  @Indexed(unique = true)
+  private UUID uploadId;
 
-  @OneToOne(optional = false)
-  @JoinColumn(name = "upload_id", nullable = false, unique = true)
-  private ReceiptUpload upload;
+  /** Denormalized for list/detail image URLs without an extra join. */
+  private String objectKey;
 
-  @Column(nullable = false)
   private String merchant;
-
-  @Column(nullable = false)
   private LocalDate expenseDate;
-
-  @Column(nullable = false, precision = 12, scale = 2)
   private BigDecimal amount;
-
-  @Column(nullable = false, length = 3)
   private String currency;
-
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 32)
   private ExpenseCategory category;
-
-  @Column(length = 1000)
   private String notes;
-
   private Double confidence;
-
-  @Column(nullable = false, updatable = false)
   private Instant createdAt;
-
-  @Column(nullable = false)
   private Instant updatedAt;
 
-  @PrePersist
-  void onCreate() {
+  public void markNew() {
     if (id == null) {
       id = UUID.randomUUID();
     }
@@ -69,21 +39,9 @@ public class Expense implements Persistable<UUID> {
       createdAt = now;
     }
     updatedAt = now;
-    newEntity = false;
   }
 
-  @PostLoad
-  void markNotNew() {
-    newEntity = false;
-  }
-
-  @Override
-  public boolean isNew() {
-    return newEntity;
-  }
-
-  @PreUpdate
-  void onUpdate() {
+  public void touch() {
     updatedAt = Instant.now();
   }
 
@@ -95,12 +53,20 @@ public class Expense implements Persistable<UUID> {
     this.id = id;
   }
 
-  public ReceiptUpload getUpload() {
-    return upload;
+  public UUID getUploadId() {
+    return uploadId;
   }
 
-  public void setUpload(ReceiptUpload upload) {
-    this.upload = upload;
+  public void setUploadId(UUID uploadId) {
+    this.uploadId = uploadId;
+  }
+
+  public String getObjectKey() {
+    return objectKey;
+  }
+
+  public void setObjectKey(String objectKey) {
+    this.objectKey = objectKey;
   }
 
   public String getMerchant() {
