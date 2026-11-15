@@ -1,0 +1,29 @@
+# Example Render Blueprint for the Spring API.
+# Connect this repo in Render, or create a Web Service from backend/Dockerfile manually.
+services:
+  - type: web
+    name: expense-copilot-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: EXTRACTOR
+        value: mock
+      - key: STORAGE
+        value: local
+      - key: LOCAL_UPLOAD_DIR
+        value: /tmp/uploads
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false

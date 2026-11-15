@@ -1,0 +1,56 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: expense-copilot
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/expense_copilot}
+    username: ${DATABASE_USERNAME:expense}
+    password: ${DATABASE_PASSWORD:expense}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+
+app:
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+  storage:
+    type: ${STORAGE:local}
+    local-dir: ${LOCAL_UPLOAD_DIR:../uploads}
+    public-base-url: ${PUBLIC_BASE_URL:http://localhost:8080}
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+    api-key: ${CLOUDINARY_API_KEY:}
+    api-secret: ${CLOUDINARY_API_SECRET:}
+  gcs:
+    bucket: ${GCS_BUCKET:}
+    project-id: ${GCS_PROJECT_ID:}
+  extractor:
+    type: ${EXTRACTOR:mock}
+    openai-api-key: ${OPENAI_API_KEY:}
+    openai-model: ${OPENAI_VISION_MODEL:gpt-4o-mini}
+  currency: EUR
+  max-upload-bytes: 5242880
+
+logging:
+  level:
+    com.examenpsi.expensecopilot: INFO
