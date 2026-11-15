@@ -66,16 +66,12 @@ public class ExpenseService {
       YearMonth ym = YearMonth.parse(month);
       LocalDate from = ym.atDay(1);
       LocalDate toExclusive = ym.plusMonths(1).atDay(1);
-      expenses = expenseRepository
-          .findByCategoryAndExpenseDateGreaterThanEqualAndExpenseDateLessThanOrderByExpenseDateDescCreatedAtDesc(
-              category, from, toExclusive);
+      expenses = expenseRepository.findByCategoryInDateRange(category, from, toExclusive);
     } else if (hasMonth) {
       YearMonth ym = YearMonth.parse(month);
       LocalDate from = ym.atDay(1);
       LocalDate toExclusive = ym.plusMonths(1).atDay(1);
-      expenses = expenseRepository
-          .findByExpenseDateGreaterThanEqualAndExpenseDateLessThanOrderByExpenseDateDescCreatedAtDesc(
-              from, toExclusive);
+      expenses = expenseRepository.findInDateRange(from, toExclusive);
     } else if (hasCategory) {
       expenses = expenseRepository.findByCategoryOrderByExpenseDateDescCreatedAtDesc(category);
     } else {
