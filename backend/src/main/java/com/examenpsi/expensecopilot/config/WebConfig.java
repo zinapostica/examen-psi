@@ -18,14 +18,20 @@ public class WebConfig {
             .map(String::trim)
             .filter(s -> !s.isEmpty())
             .toArray(String[]::new);
-        registry.addMapping("/api/**")
-            .allowedOrigins(origins)
+        boolean wildcard = Arrays.stream(origins).anyMatch("*"::equals);
+        var api = registry.addMapping("/api/**")
             .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-            .allowedHeaders("*")
-            .allowCredentials(true);
-        registry.addMapping("/files/**")
-            .allowedOrigins(origins)
+            .allowedHeaders("*");
+        var files = registry.addMapping("/files/**")
             .allowedMethods("GET", "OPTIONS");
+        // Spring forbids allowCredentials(true) with allowedOrigins("*").
+        if (wildcard) {
+          api.allowedOriginPatterns("*").allowCredentials(false);
+          files.allowedOriginPatterns("*");
+        } else {
+          api.allowedOrigins(origins).allowCredentials(true);
+          files.allowedOrigins(origins);
+        }
       }
     };
   }
