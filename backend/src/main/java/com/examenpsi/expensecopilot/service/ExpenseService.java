@@ -8,6 +8,7 @@ import com.examenpsi.expensecopilot.repository.ExpenseRepository;
 import com.examenpsi.expensecopilot.storage.ObjectStorage;
 import com.examenpsi.expensecopilot.web.dto.CreateExpenseRequest;
 import com.examenpsi.expensecopilot.web.dto.ExpenseResponse;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -63,12 +64,18 @@ public class ExpenseService {
     List<Expense> expenses;
     if (hasMonth && hasCategory) {
       YearMonth ym = YearMonth.parse(month);
-      expenses = expenseRepository.findByCategoryAndExpenseDateBetweenOrderByExpenseDateDescCreatedAtDesc(
-          category, ym.atDay(1), ym.atEndOfMonth());
+      LocalDate from = ym.atDay(1);
+      LocalDate toExclusive = ym.plusMonths(1).atDay(1);
+      expenses = expenseRepository
+          .findByCategoryAndExpenseDateGreaterThanEqualAndExpenseDateLessThanOrderByExpenseDateDescCreatedAtDesc(
+              category, from, toExclusive);
     } else if (hasMonth) {
       YearMonth ym = YearMonth.parse(month);
-      expenses = expenseRepository.findByExpenseDateBetweenOrderByExpenseDateDescCreatedAtDesc(
-          ym.atDay(1), ym.atEndOfMonth());
+      LocalDate from = ym.atDay(1);
+      LocalDate toExclusive = ym.plusMonths(1).atDay(1);
+      expenses = expenseRepository
+          .findByExpenseDateGreaterThanEqualAndExpenseDateLessThanOrderByExpenseDateDescCreatedAtDesc(
+              from, toExclusive);
     } else if (hasCategory) {
       expenses = expenseRepository.findByCategoryOrderByExpenseDateDescCreatedAtDesc(category);
     } else {

@@ -13,11 +13,12 @@ public interface ExpenseRepository extends MongoRepository<Expense, UUID> {
 
   List<Expense> findByCategoryOrderByExpenseDateDescCreatedAtDesc(ExpenseCategory category);
 
-  List<Expense> findByExpenseDateBetweenOrderByExpenseDateDescCreatedAtDesc(
-      LocalDate fromDate, LocalDate toDate);
+  /** Inclusive start, exclusive end — pass first day of next month as {@code toDateExclusive}. */
+  List<Expense> findByExpenseDateGreaterThanEqualAndExpenseDateLessThanOrderByExpenseDateDescCreatedAtDesc(
+      LocalDate fromDateInclusive, LocalDate toDateExclusive);
 
-  List<Expense> findByCategoryAndExpenseDateBetweenOrderByExpenseDateDescCreatedAtDesc(
-      ExpenseCategory category, LocalDate fromDate, LocalDate toDate);
+  List<Expense> findByCategoryAndExpenseDateGreaterThanEqualAndExpenseDateLessThanOrderByExpenseDateDescCreatedAtDesc(
+      ExpenseCategory category, LocalDate fromDateInclusive, LocalDate toDateExclusive);
 
   boolean existsByUploadId(UUID uploadId);
 }
