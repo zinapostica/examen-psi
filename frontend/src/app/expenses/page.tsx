@@ -33,10 +33,22 @@ export default function ExpensesPage() {
     });
   }, [month, category]);
 
-  const total = useMemo(
-    () => items.reduce((sum, e) => sum + Number(e.amount), 0),
-    [items]
-  );
+  // Sum per currency — do not mix RON/EUR into a fake € total (no FX in MVP).
+  const totalsByCurrency = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const e of items) {
+      const code = (e.currency || "EUR").toUpperCase();
+      map.set(code, (map.get(code) ?? 0) + Number(e.amount));
+    }
+    return [...map.entries()].sort(([a], [b]) => a.localeCompare(b));
+  }, [items]);
+
+  const totalsLabel = useMemo(() => {
+    if (totalsByCurrency.length === 0) return "0.00";
+    return totalsByCurrency
+      .map(([code, sum]) => `${sum.toFixed(2)} ${code}`)
+      .join(" · ");
+  }, [totalsByCurrency]);
 
   return (
     <main style={{ paddingBottom: "3rem" }}>
@@ -83,7 +95,9 @@ export default function ExpensesPage() {
             </select>
           </div>
           <div style={{ color: "var(--ink-soft)", fontWeight: 600 }}>
-            {pending ? "Loading…" : `${items.length} expenses · €${total.toFixed(2)}`}
+            {pending
+              ? "Loading…"
+              : `${items.length} expense${items.length === 1 ? "" : "s"} · ${totalsLabel}`}
           </div>
         </div>
       </section>
