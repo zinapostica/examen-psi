@@ -1,0 +1,13 @@
+{
+  "merchant": "Café Central",
+  "expenseDate": "2026-11-14",
+  "amount": 12.50,
+  "currency": "EUR",
+  "category": "FOOD",
+  "confidence": 0.86,
+  "lineItems": [
+    { "description": "Cappuccino", "amount": 3.50 },
+    { "description": "Croissant", "amount": 2.80 },
+    { "description": "Lunch menu", "amount": 6.20 }
+  ]
+}
